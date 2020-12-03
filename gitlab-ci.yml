@@ -1,0 +1,19 @@
+stages:
+  - build
+
+.build_job:
+  stage: build
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  after_script:
+    - docker image prune -a -f
+  tags:
+    - hz-afs
+
+build:
+  extends: .build_job
+  script:
+    - docker build --no-cache -t $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:latest
+  only:
+    - master
