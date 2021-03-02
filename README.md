@@ -21,7 +21,7 @@ docker run --rm -d --name imps -p 7777:7777 <repository>/imps
 #### Пример `curl`-запроса
 
 ```sh
-curl -X POST -H "Content-Type: image/ipeg" --data-binary @/path/to/image.jpg  "http://localhost:7777/resize?h=1000&w=1000" >> ~/Downloads/out.jpg
+curl -X POST -H "Content-Type: image/jpeg" --data-binary @/path/to/image.jpg  "http://localhost:7777/resize?h=1000&w=1000" >> ~/Downloads/out.jpg
 ```
 
 Исходное изображение находиться в файле `/path/to/image.jpg`. Результирующее изображение будет размещено в `~/Downloads/out.jpg`.
