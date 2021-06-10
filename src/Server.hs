@@ -2,12 +2,23 @@
 
 module Server where
 
-import           Data.Text.Lazy            (Text)
-import           Network.HTTP.Types.Status (badRequest400)
-import           Resize                    (imageJpegResize, imagePngResize)
-import           Web.Scotty                (ActionM, ScottyM, body, header,
-                                            liftAndCatchIO, param, post, raw,
-                                            rescue, scotty, status, text)
+import Data.Text.Lazy (Text)
+import Network.HTTP.Types.Status (badRequest400)
+import Resize (imageJpegResize, imagePngResize)
+import Web.Scotty
+  ( ActionM,
+    ScottyM,
+    body,
+    header,
+    liftAndCatchIO,
+    param,
+    post,
+    raw,
+    rescue,
+    scotty,
+    status,
+    text,
+  )
 
 -- Runs service
 run :: IO ()
@@ -28,13 +39,14 @@ handleResize = do
       origImageBS <- body
       requestedWidth <- param "w" `rescue` \_ -> return 0
       requestedHeight <- param "h" `rescue` \_ -> return 0
+      quality <- param "q" `rescue` \_ -> return (-1)
       if requestedWidth == 0 && requestedHeight == 0
         then badRequest "No requested image size"
         else
           let requestedSize = (requestedWidth, requestedHeight)
            in case contentType of
                 "image/jpeg" -> do
-                  newImageBS <- liftAndCatchIO $ imageJpegResize requestedSize origImageBS
+                  newImageBS <- liftAndCatchIO $ imageJpegResize quality requestedSize origImageBS
                   raw newImageBS
                 "image/png" -> do
                   newImageBS <- liftAndCatchIO $ imagePngResize requestedSize origImageBS

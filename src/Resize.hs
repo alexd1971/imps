@@ -37,19 +37,15 @@ rotateToNormal orientation image = do
     _ -> return image
 
 -- Converts raw jpeg image data to raw resized jpeg image data
-imageJpegResize :: Size -> ByteString -> IO ByteString
-imageJpegResize size imageBS =
-  fromStrict
-    <$> ( decode
-            >>= resize
-            >>= rotate
-            >>= encode
-        )
+imageJpegResize :: Int -> Size -> ByteString -> IO ByteString
+imageJpegResize quality size imageBS
+  | quality >= (-1) && quality <= 95 = fromStrict <$> (decode >>= resize >>= rotate >>= encode)
+  | otherwise = imageJpegResize (-1) size imageBS
   where
     decode = loadJpegByteString . toStrict $ imageBS
     resize = gdResize size
     rotate = rotateToNormal $ imageOrientation imageBS
-    encode = saveJpegByteString (-1)
+    encode = saveJpegByteString quality
 
 -- Converts raw png image data to raw resized png image data
 imagePngResize :: Size -> ByteString -> IO ByteString
