@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b2d08615c0fe545bb2ba1831d845f78424468b69c4a663663abfdff8fbd9f073
+-- hash: 0470cefbe2041a4578acf003dba5fae81633f7058c87c81996f15b04aa7d5247
 
 name:           imps
 version:        0.1.0.0
@@ -29,8 +29,8 @@ library
   exposed-modules:
       DSL
       Helpers
-      Interpret.GD
-      Interpret.JuicyPixels
+      Interpreters.GD
+      Interpreters.JuicyPixels
       Resize
       Server
   other-modules:
