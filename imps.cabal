@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a8e5232c0cecd539a93b2eeea2cd134897aae787bf4e35256012b798d720df86
+-- hash: b2d08615c0fe545bb2ba1831d845f78424468b69c4a663663abfdff8fbd9f073
 
 name:           imps
 version:        0.1.0.0
@@ -27,6 +27,10 @@ source-repository head
 
 library
   exposed-modules:
+      DSL
+      Helpers
+      Interpret.GD
+      Interpret.JuicyPixels
       Resize
       Server
   other-modules:
@@ -34,8 +38,11 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , JuicyPixels-extra
+    , base >=4.7 && <5
     , bytestring
+    , free
     , gd
     , hsexif
     , http-types
@@ -51,8 +58,11 @@ executable imps
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , JuicyPixels-extra
+    , base >=4.7 && <5
     , bytestring
+    , free
     , gd
     , hsexif
     , http-types
@@ -70,8 +80,11 @@ test-suite imps-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , JuicyPixels-extra
+    , base >=4.7 && <5
     , bytestring
+    , free
     , gd
     , hsexif
     , http-types

@@ -3,6 +3,7 @@
 module Server where
 
 import Data.Text.Lazy (Text)
+import Interpret.GD
 import Network.HTTP.Types.Status (badRequest400)
 import Resize (imageJpegResize, imagePngResize)
 import Web.Scotty
@@ -19,6 +20,7 @@ import Web.Scotty
     status,
     text,
   )
+import Interpret.JuicyPixels
 
 -- Runs service
 run :: IO ()
@@ -43,13 +45,15 @@ handleResize = do
       if requestedWidth == 0 && requestedHeight == 0
         then badRequest "No requested image size"
         else
-          let requestedSize = (requestedWidth, requestedHeight)
+          let requestedSize = max requestedWidth requestedHeight
            in case contentType of
                 "image/jpeg" -> do
-                  newImageBS <- liftAndCatchIO $ imageJpegResize quality requestedSize origImageBS
+                  -- newImageBS <- liftAndCatchIO . runGD $ imageJpegResize origImageBS requestedSize quality
+                  let newImageBS = runJuicyPixels $ imageJpegResize origImageBS requestedSize quality
                   raw newImageBS
                 "image/png" -> do
-                  newImageBS <- liftAndCatchIO $ imagePngResize requestedSize origImageBS
+                  let newImageBS = runJuicyPixels $ imagePngResize origImageBS requestedSize
+                  newImageBS <- liftAndCatchIO . runGD $ imagePngResize origImageBS requestedSize
                   raw newImageBS
                 _ -> badRequest "Unsupported image format"
 
