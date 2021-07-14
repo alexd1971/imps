@@ -1,8 +1,11 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 module Interpreters.GD (runGD) where
 
 import Control.Monad.Free (Free (Free, Pure))
 import DSL
-  ( Imp,
+  ( Img (..),
+    Imp,
     Interpreter (onDecodeJpeg, onDecodePng, onEncodeJpeg, onEncodePng, onResizeImage, onRotateToNormal),
     Orientation (CCW90, CW180, CW90, Normal),
     Size,
@@ -28,7 +31,7 @@ import qualified Graphics.HsExif as Exif
   )
 import Helpers
 
-instance Interpreter IO where
+instance Interpreter Image IO where
   onDecodeJpeg bs = do
     let eitherExif = Exif.parseExif bs
         orientation = case eitherExif of
@@ -40,34 +43,23 @@ instance Interpreter IO where
                   Just (Exif.Rotation Exif.MinusNinety) -> CCW90
                   Just (Exif.Rotation Exif.HundredAndEighty) -> CW180
                   _ -> Normal
-    return (toDyn . loadJpegByteString . toStrict $ bs, orientation)
+    gdImage <- loadJpegByteString . toStrict $ bs
+    return (Img gdImage, orientation)
 
-  onDecodePng bs = toDyn <$> loadPngByteString (toStrict bs)
+  onDecodePng bs = Img <$> loadPngByteString (toStrict bs)
 
-  onEncodeJpeg quality img = do
-    let maybeGDImage = fromDynamic img :: Maybe Image
-    case maybeGDImage of
-      Just gdImage -> fromStrict <$> saveJpegByteString quality gdImage
-      Nothing -> error "Cannot get image"
-  onEncodePng img = do
-    let maybeGDImage = fromDynamic img :: Maybe Image
-    case maybeGDImage of
-      Just gdImage -> fromStrict <$> savePngByteString gdImage
-      Nothing -> error "Cannot get image"
-  onRotateToNormal orientation img = do
-    let maybeGDImage = fromDynamic img :: Maybe Image
-    toDyn <$> case maybeGDImage of
-      Just gdImage -> case orientation of
-        CW90 -> rotateImage 1 gdImage
-        CCW90 -> rotateImage 3 gdImage
-        CW180 -> rotateImage 2 gdImage
-        _ -> return gdImage
-      Nothing -> error "Cannot get image"
-  onResizeImage size img = do
-    let maybeGDImage = fromDynamic img :: Maybe Image
-    case maybeGDImage of
-      Just gdImage -> toDyn <$> gdResize size gdImage
-      Nothing -> error "Cannot get image"
+  onEncodeJpeg quality (Img gdImage) = fromStrict <$> saveJpegByteString quality gdImage
+
+  onEncodePng (Img gdImage) = fromStrict <$> savePngByteString gdImage
+
+  onRotateToNormal orientation (Img gdImage) =
+    Img <$> case orientation of
+      CW90 -> rotateImage 1 gdImage
+      CCW90 -> rotateImage 3 gdImage
+      CW180 -> rotateImage 2 gdImage
+      _ -> return gdImage
+
+  onResizeImage size (Img gdImage) = Img <$> gdResize size gdImage
 
 -- Makes image resize with GD library
 gdResize :: Size -> Image -> IO Image
@@ -76,5 +68,5 @@ gdResize requestedSize image = do
   let newSize = calculateNewSize actualSize requestedSize
   uncurry resizeImage newSize image
 
-runGD :: Imp a -> IO a
+runGD :: Imp Image a -> IO a
 runGD = interpret

@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 module Interpreters.JuicyPixels (runJuicyPixels) where
 
 import Codec.Picture
@@ -23,7 +26,8 @@ import Codec.Picture.Metadata.Exif
 import Codec.Picture.Types (ColorSpaceConvertible (convertImage))
 import Control.Monad.Free (Free (Free, Pure))
 import DSL
-  ( Imp,
+  ( Img (..),
+    Imp,
     Interpreter (onDecodeJpeg, onDecodePng, onEncodeJpeg, onEncodePng, onResizeImage, onRotateToNormal),
     Orientation (CCW90, CW180, CW90, Normal),
     interpret,
@@ -33,8 +37,8 @@ import Data.Dynamic (fromDynamic, toDyn)
 import Data.Functor.Identity
 import Helpers (calculateNewSize)
 
-instance Interpreter Identity where
-  onDecodeJpeg bs = return (toDyn image, orientation)
+instance Interpreter (Image PixelRGB8) Identity where
+  onDecodeJpeg bs = return (Img image, orientation)
     where
       (image, metadata) = case decodeImageWithMetadata . toStrict $ bs of
         Right (img, meta) -> (convertRGB8 img, meta)
@@ -46,39 +50,32 @@ instance Interpreter Identity where
           8 -> CW90
           _ -> Normal
         _ -> Normal
-  onDecodePng bs = return (toDyn image)
+
+  onDecodePng bs = return (Img image)
     where
       image = case decodeImage . toStrict $ bs of
         Right img -> convertRGB8 img
         Left e -> error e
-  onEncodeJpeg quality img = return (encodeJpegAtQuality q i)
-    where
-      q = fromIntegral quality
-      i = case fromDynamic img :: Maybe (Image PixelRGB8) of
-        Just image -> convertImage image
-        Nothing -> error "Cannot convert jpeg"
-  onEncodePng img = return (encodePng i)
-    where
-      i = case fromDynamic img :: Maybe (Image PixelRGB8) of
-        Just image -> image
-        Nothing -> error "Cannot convert png"
-  onRotateToNormal o img = return rotated
-    where
-      original = case fromDynamic img :: Maybe (Image PixelRGB8) of
-        Just image -> image
-        Nothing -> error "Cannot get image"
-      rotated = case o of
-        Normal -> img
-        CW90 -> toDyn . rotateLeft90 $ original
-        CW180 -> toDyn . rotate180 $ original
-        CCW90 -> toDyn . rotateRight90 $ original
-  onResizeImage s img = return resized
-    where
-      original = case fromDynamic img :: Maybe (Image PixelRGB8) of
-        Just image -> image
-        Nothing -> error "Cannot get image"
-      size = calculateNewSize (imageWidth original, imageHeight original) s
-      resized = toDyn $ uncurry scaleBilinear size original
 
-runJuicyPixels :: Imp a -> IO a
+  onEncodeJpeg quality (Img jpImage) = return (encodeJpegAtQuality quality image)
+    where
+      quality = fromIntegral quality
+      image = convertImage jpImage
+
+  onEncodePng (Img jpImage) = return (encodePng jpImage)
+
+  onRotateToNormal orientation image@(Img jpImage) = return rotated
+    where
+      rotated = case orientation of
+        Normal -> image
+        CW90 -> Img . rotateLeft90 $ jpImage
+        CW180 -> Img . rotate180 $ jpImage
+        CCW90 -> Img . rotateRight90 $ jpImage
+
+  onResizeImage size (Img jpImage) = return resized
+    where
+      newSize = calculateNewSize (imageWidth jpImage, imageHeight jpImage) size
+      resized = Img $ uncurry scaleBilinear newSize jpImage
+
+runJuicyPixels :: Imp (Image PixelRGB8) a -> IO a
 runJuicyPixels = return . runIdentity . interpret

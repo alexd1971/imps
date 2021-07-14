@@ -1,7 +1,7 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module DSL
-  ( Img,
+  ( Img (..),
     Size,
     Quality,
     Orientation (..),
@@ -23,7 +23,7 @@ import Control.Monad.Free
 import Data.ByteString.Lazy
 import Data.Dynamic
 
-type Img = Dynamic
+newtype Img a = Img a
 
 type Size = Int
 
@@ -31,17 +31,15 @@ type Quality = Int
 
 data Orientation = Normal | CW90 | CCW90 | CW180 deriving (Show)
 
-data ImpF next
-  = DecodeJpeg ByteString ((Img, Orientation) -> next)
-  | DecodePng ByteString (Img -> next)
-  | EncodeJpeg Quality Img (ByteString -> next)
-  | EncodePng Img (ByteString -> next)
-  | RotateToNormal Orientation Img (Img -> next)
-  | ResizeImage Size Img (Img -> next)
+data ImpF a next
+  = DecodeJpeg ByteString ((Img a, Orientation) -> next)
+  | DecodePng ByteString (Img a -> next)
+  | EncodeJpeg Quality (Img a) (ByteString -> next)
+  | EncodePng (Img a) (ByteString -> next)
+  | RotateToNormal Orientation (Img a) (Img a -> next)
+  | ResizeImage Size (Img a) (Img a -> next)
 
-type Imp = Free ImpF
-
-instance Functor ImpF where
+instance Functor (ImpF a) where
   fmap f (DecodeJpeg bs g) = DecodeJpeg bs (f . g)
   fmap f (RotateToNormal o img g) = RotateToNormal o img (f . g)
   fmap f (DecodePng bs g) = DecodePng bs (f . g)
@@ -49,33 +47,35 @@ instance Functor ImpF where
   fmap f (EncodeJpeg q img g) = EncodeJpeg q img (f . g)
   fmap f (EncodePng img g) = EncodePng img (f . g)
 
-decodeJpeg :: ByteString -> Imp (Img, Orientation)
+type Imp a = Free (ImpF a)
+
+decodeJpeg :: ByteString -> Imp a (Img a, Orientation)
 decodeJpeg bs = liftF $ DecodeJpeg bs id
 
-encodeJpeg :: Quality -> Img -> Imp ByteString
+encodeJpeg :: Quality -> Img a -> Imp a ByteString
 encodeJpeg quality img = liftF $ EncodeJpeg quality img id
 
-decodePng :: ByteString -> Imp Img
+decodePng :: ByteString -> Imp a (Img a)
 decodePng bs = liftF $ DecodePng bs id
 
-encodePng :: Img -> Imp ByteString
+encodePng :: Img a -> Imp a ByteString
 encodePng img = liftF $ EncodePng img id
 
-rotateToNormal :: Orientation -> Img -> Imp Img
+rotateToNormal :: Orientation -> Img a -> Imp a (Img a)
 rotateToNormal orientation img = liftF $ RotateToNormal orientation img id
 
-resizeImage :: Size -> Img -> Imp Img
+resizeImage :: Size -> Img a -> Imp a (Img a)
 resizeImage size img = liftF $ ResizeImage size img id
 
-class Monad m => Interpreter m where
-  onDecodeJpeg :: ByteString -> m (Img, Orientation)
-  onDecodePng :: ByteString -> m Img
-  onEncodeJpeg :: Quality -> Img -> m ByteString
-  onEncodePng :: Img -> m ByteString
-  onRotateToNormal :: Orientation -> Img -> m Img
-  onResizeImage :: Size -> Img -> m Img
+class Monad m => Interpreter a m where
+  onDecodeJpeg :: ByteString -> m (Img a, Orientation)
+  onDecodePng :: ByteString -> m (Img a)
+  onEncodeJpeg :: Quality -> Img a -> m ByteString
+  onEncodePng :: Img a -> m ByteString
+  onRotateToNormal :: Orientation -> Img a -> m (Img a)
+  onResizeImage :: Size -> Img a -> m (Img a)
 
-interpret :: Monad m => Interpreter m => Imp a -> m a
+interpret :: Monad m => Interpreter b m => Imp b a -> m a
 interpret (Pure a) = return a
 interpret (Free (DecodeJpeg bs next)) = do
   img <- onDecodeJpeg bs
