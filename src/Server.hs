@@ -3,6 +3,8 @@
 module Server where
 
 import Data.Text.Lazy (Text)
+import Interpreters.GD
+-- import Interpreters.JuicyPixels
 import Network.HTTP.Types.Status (badRequest400)
 import Resize (imageJpegResize, imagePngResize)
 import Web.Scotty
@@ -37,21 +39,18 @@ handleResize = do
     Nothing -> badRequest "Unknown image format"
     Just contentType -> do
       origImageBS <- body
-      requestedWidth <- param "w" `rescue` \_ -> return 0
-      requestedHeight <- param "h" `rescue` \_ -> return 0
+      width <- param "w" `rescue` \_ -> return 0
+      height <- param "h" `rescue` \_ -> return 0
       quality <- param "q" `rescue` \_ -> return (-1)
-      if requestedWidth == 0 && requestedHeight == 0
+      if width == 0 && height == 0
         then badRequest "No requested image size"
-        else
-          let requestedSize = (requestedWidth, requestedHeight)
-           in case contentType of
-                "image/jpeg" -> do
-                  newImageBS <- liftAndCatchIO $ imageJpegResize quality requestedSize origImageBS
-                  raw newImageBS
-                "image/png" -> do
-                  newImageBS <- liftAndCatchIO $ imagePngResize requestedSize origImageBS
-                  raw newImageBS
-                _ -> badRequest "Unsupported image format"
+        else do
+          let size = max width height
+              runScript = runGD
+          case contentType of
+            "image/jpeg" -> (liftAndCatchIO . runScript $ imageJpegResize origImageBS size quality) >>= raw
+            "image/png" -> (liftAndCatchIO . runScript $ imagePngResize origImageBS size) >>= raw
+            _ -> badRequest "Unsupported image format"
 
 -- Creates Bad Request server response
 badRequest :: Text -> ActionM ()

@@ -17,3 +17,11 @@ build:
     - docker push $CI_REGISTRY_IMAGE:latest
   only:
     - master
+
+build_test:
+  extends: .build_job
+  script:
+    - docker build --no-cache -t $CI_REGISTRY_IMAGE:test .
+    - docker push $CI_REGISTRY_IMAGE:test
+  except:
+    - master
