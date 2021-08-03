@@ -5,6 +5,8 @@ RUN     apt-get update && apt-get -y install libgd-dev
 # Copying imps sources
 WORKDIR /tmp/build
 COPY    . ./
+# Running tests
+RUN     stack test
 # Building imps
 RUN     stack build --system-ghc --copy-bins
 # Collecting shared libraries

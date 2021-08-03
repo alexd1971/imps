@@ -22,11 +22,13 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - JuicyPixels
 - JuicyPixels-extra
+- QuickCheck
 - base >= 4.7 && < 5
 - bytestring
 - free
 - gd
 - hsexif
+- hspec
 - http-types
 - scotty
 - text

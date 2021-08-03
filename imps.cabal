@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0416a703baaec927e244f2d952213c1516bbfb408bfbf228269f633c00c09b31
+-- hash: 01d4022a39fa4e4b8893801c43b4d003cc392850ccd15dc6036778e590bb816b
 
 name:           imps
 version:        0.1.0.0
@@ -40,11 +40,13 @@ library
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
+    , QuickCheck
     , base >=4.7 && <5
     , bytestring
     , free
     , gd
     , hsexif
+    , hspec
     , http-types
     , scotty
     , text
@@ -56,16 +58,17 @@ executable imps
       Paths_imps
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  ld-options: -static -pthread
+  ghc-options: -O2 -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
+    , QuickCheck
     , base >=4.7 && <5
     , bytestring
     , free
     , gd
     , hsexif
+    , hspec
     , http-types
     , imps
     , scotty
@@ -76,6 +79,11 @@ test-suite imps-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Interpreters.TestInterpreter
+      MockImageLibrary
+      Tests.Helpers.CalculateNewSize
+      Tests.MockImageLibrary
+      Tests.Resize
       Paths_imps
   hs-source-dirs:
       test
@@ -83,11 +91,13 @@ test-suite imps-test
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
+    , QuickCheck
     , base >=4.7 && <5
     , bytestring
     , free
     , gd
     , hsexif
+    , hspec
     , http-types
     , imps
     , scotty
