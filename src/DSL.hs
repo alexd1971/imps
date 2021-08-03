@@ -27,7 +27,7 @@ type Size = Int
 
 type Quality = Int
 
-data Orientation = Normal | CW90 | CCW90 | UpSideDown deriving (Show)
+data Orientation = Normal | CW90 | UpSideDown | CCW90 deriving (Eq, Show, Read, Enum, Bounded)
 
 data ImpLang next
   = DecodeJpeg ByteString ((Image, Orientation) -> next)
