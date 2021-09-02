@@ -6,7 +6,8 @@ import Tests.MockImageLibrary (testMockImageLibrary)
 import Tests.Resize (testImageResize)
 
 main :: IO ()
-main = hspec $ do
-  describe "Testing helper functions:" testCalculateNewSize
-  describe "Testing mock image library:" testMockImageLibrary
-  describe "Testing resize logic:" testImageResize
+main =
+  hspec $ do
+    describe "Testing helper functions:" testCalculateNewSize
+    describe "Testing mock image library:" testMockImageLibrary
+    describe "Testing resize logic:" testImageResize

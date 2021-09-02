@@ -2,11 +2,18 @@
 
 module MockImageLibrary where
 
-import DSL (Orientation (..))
-import Data.ByteString.Char8
-import Test.QuickCheck
+import DSL.ImpLang (Orientation(..))
+import Data.ByteString.Char8 (ByteString, pack, unpack)
+import Test.QuickCheck (Arbitrary(..), choose, elements)
 
-data MockImage = MockImage {width :: Int, height :: Int, orientation :: Orientation, quality :: Int} deriving (Eq, Read, Show)
+data MockImage =
+  MockImage
+    { width :: Int
+    , height :: Int
+    , orientation :: Orientation
+    , quality :: Int
+    }
+  deriving (Eq, Read, Show)
 
 encode :: MockImage -> ByteString
 encode = pack . show
@@ -14,12 +21,32 @@ encode = pack . show
 decode :: ByteString -> MockImage
 decode = read . unpack
 
-data Direction = CW | CCW deriving (Eq, Show)
+data Direction
+  = CW
+  | CCW
+  deriving (Eq, Show)
 
 rotate :: Direction -> MockImage -> MockImage
-rotate d image@(MockImage w h o _) = case d of
-  CW -> image {width = h, height = w, orientation = if o == maxBound then minBound else succ o}
-  CCW -> image {width = h, height = w, orientation = if o == minBound then maxBound else pred o}
+rotate d image@(MockImage w h o _) =
+  case d of
+    CW ->
+      image
+        { width = h
+        , height = w
+        , orientation =
+            if o == maxBound
+              then minBound
+              else succ o
+        }
+    CCW ->
+      image
+        { width = h
+        , height = w
+        , orientation =
+            if o == minBound
+              then maxBound
+              else pred o
+        }
 
 type Width = Int
 
@@ -46,10 +73,4 @@ instance Arbitrary MockImage where
     h <- choose (100, 5000)
     o <- arbitrary
     q <- choose (0, 100)
-    return
-      MockImage
-        { width = w,
-          height = h,
-          orientation = o,
-          quality = q
-        }
+    return MockImage {width = w, height = h, orientation = o, quality = q}
