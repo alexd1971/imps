@@ -1,18 +1,17 @@
 module Tests.Resize
-  ( testJpegResize,
-    testPngResize,
-    testImageResize,
-  )
-where
+  ( testJpegResize
+  , testPngResize
+  , testImageResize
+  ) where
 
-import DSL
+import DSL.ImpLang
 import Data.ByteString.Lazy
-import Interpreters.TestInterpreter
 import MockImageLibrary
-import Resize
+import Scripts.Resize
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
+import Tests.Interpreters.ImpLang
 
 jpegResizeData :: Gen (MockImage, Size, Quality)
 jpegResizeData = do
@@ -25,31 +24,28 @@ correctJpegSize :: Property
 correctJpegSize =
   forAll
     jpegResizeData
-    ( \(image, s, q) ->
-        let bs = fromStrict . encode $ image
-            image' = decode $ toStrict . run $ imageJpegResize bs s q
-         in max (width image') (height image') == s
-    )
+    (\(image, s, q) ->
+       let bs = fromStrict . encode $ image
+           image' = decode $ toStrict . run $ imageJpegResize bs s q
+        in max (width image') (height image') == s)
 
 correctJpegQuality :: Property
 correctJpegQuality =
   forAll
     jpegResizeData
-    ( \(image, s, q) ->
-        let bs = fromStrict . encode $ image
-            image' = decode $ toStrict . run $ imageJpegResize bs s q
-         in quality image' == q
-    )
+    (\(image, s, q) ->
+       let bs = fromStrict . encode $ image
+           image' = decode $ toStrict . run $ imageJpegResize bs s q
+        in quality image' == q)
 
 correctJpegOrientation :: Property
 correctJpegOrientation =
   forAll
     jpegResizeData
-    ( \(image, s, q) ->
-        let bs = fromStrict . encode $ image
-            image' = decode $ toStrict . run $ imageJpegResize bs s q
-         in orientation image' == Normal
-    )
+    (\(image, s, q) ->
+       let bs = fromStrict . encode $ image
+           image' = decode $ toStrict . run $ imageJpegResize bs s q
+        in orientation image' == Normal)
 
 pngResizeData :: Gen (MockImage, Size)
 pngResizeData = do
@@ -61,11 +57,10 @@ correctPngSize :: Property
 correctPngSize =
   forAll
     pngResizeData
-    ( \(image, s) ->
-        let bs = fromStrict . encode $ image
-            image' = decode $ toStrict . run $ imagePngResize bs s
-         in max (width image') (height image') == s
-    )
+    (\(image, s) ->
+       let bs = fromStrict . encode $ image
+           image' = decode $ toStrict . run $ imagePngResize bs s
+        in max (width image') (height image') == s)
 
 testJpegResize :: Spec
 testJpegResize = do

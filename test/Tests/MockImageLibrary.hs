@@ -1,25 +1,24 @@
 module Tests.MockImageLibrary
-  ( testEncodeDecode,
-    testRotate,
-    testResize,
-    testMockImageLibrary,
-  )
-where
+  ( testEncodeDecode
+  , testRotate
+  , testResize
+  , testMockImageLibrary
+  ) where
 
-import DSL (Orientation (CCW90, CW90, Normal, UpSideDown))
+import DSL.ImpLang (Orientation(CCW90, CW90, Normal, UpSideDown))
 import MockImageLibrary
-  ( Direction (..),
-    Height,
-    MockImage (height, orientation, width),
-    Width,
-    decode,
-    encode,
-    resize,
-    rotate,
+  ( Direction(..)
+  , Height
+  , MockImage(height, orientation, width)
+  , Width
+  , decode
+  , encode
+  , resize
+  , rotate
   )
 import Test.Hspec (Spec, describe)
 import Test.Hspec.QuickCheck (prop)
-import Test.QuickCheck (Arbitrary (arbitrary), Gen, Property, choose, forAll)
+import Test.QuickCheck (Arbitrary(arbitrary), Gen, Property, choose, forAll)
 
 encodeDecode :: MockImage -> Bool
 encodeDecode image = (decode . encode) image == image
@@ -35,16 +34,18 @@ correctOrientation direction image =
       oldOrientation = orientation image
       newOrientation = orientation image'
    in case direction of
-        CW -> case oldOrientation of
-          Normal -> newOrientation == CW90
-          CW90 -> newOrientation == UpSideDown
-          UpSideDown -> newOrientation == CCW90
-          CCW90 -> newOrientation == Normal
-        CCW -> case oldOrientation of
-          Normal -> newOrientation == CCW90
-          CW90 -> newOrientation == Normal
-          UpSideDown -> newOrientation == CW90
-          CCW90 -> newOrientation == UpSideDown
+        CW ->
+          case oldOrientation of
+            Normal -> newOrientation == CW90
+            CW90 -> newOrientation == UpSideDown
+            UpSideDown -> newOrientation == CCW90
+            CCW90 -> newOrientation == Normal
+        CCW ->
+          case oldOrientation of
+            Normal -> newOrientation == CCW90
+            CW90 -> newOrientation == Normal
+            UpSideDown -> newOrientation == CW90
+            CCW90 -> newOrientation == UpSideDown
 
 testEncodeDecode :: Spec
 testEncodeDecode = do

@@ -1,4 +1,6 @@
-module Tests.Helpers.CalculateNewSize (testCalculateNewSize) where
+module Tests.Helpers.CalculateNewSize
+  ( testCalculateNewSize
+  ) where
 
 import Helpers (calculateNewSize)
 import Test.Hspec (Spec, describe)
@@ -13,16 +15,22 @@ triples = do
   return (x, y, z)
 
 correctMaxSize :: Property
-correctMaxSize = forAll triples (\(w, h, s) -> let (w', h') = calculateNewSize (w, h) s in max w' h' == s)
+correctMaxSize =
+  forAll
+    triples
+    (\(w, h, s) ->
+       let (w', h') = calculateNewSize (w, h) s
+        in max w' h' == s)
 
 correctProportions :: Property
 correctProportions =
   forAll
     triples
-    ( \(w, h, s) ->
-        let (w', h') = calculateNewSize (w, h) s
-         in (fromIntegral w' / fromIntegral h') - (fromIntegral w / fromIntegral h) < 0.1
-    )
+    (\(w, h, s) ->
+       let (w', h') = calculateNewSize (w, h) s
+        in (fromIntegral w' / fromIntegral h') -
+           (fromIntegral w / fromIntegral h) <
+           0.1)
 
 testCalculateNewSize :: Spec
 testCalculateNewSize = do

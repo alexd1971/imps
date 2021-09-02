@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.3.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 01d4022a39fa4e4b8893801c43b4d003cc392850ccd15dc6036778e590bb816b
+-- hash: 8367aeeeaa96911e9d0290350c69f143e3735d5fef12cdccfbf3268282ca9353
 
 name:           imps
 version:        0.1.0.0
@@ -27,12 +27,17 @@ source-repository head
 
 library
   exposed-modules:
-      DSL
+      DSL.ControlProgram
+      DSL.ImpLang
+      DSL.IOLang
       Helpers
-      Interpreters.GD
-      Interpreters.JuicyPixels
-      Resize
-      Server
+      Interpreters.ControlProgram
+      Interpreters.ImpLang.GD
+      Interpreters.ImpLang.JuicyPixels
+      Interpreters.IOLang.Http
+      Scripts.Program
+      Scripts.ReadInput
+      Scripts.Resize
   other-modules:
       Paths_imps
   hs-source-dirs:
@@ -40,16 +45,15 @@ library
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
-    , QuickCheck
     , base >=4.7 && <5
     , bytestring
     , free
     , gd
     , hsexif
-    , hspec
     , http-types
-    , scotty
     , text
+    , wai
+    , warp
   default-language: Haskell2010
 
 executable imps
@@ -62,26 +66,25 @@ executable imps
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
-    , QuickCheck
     , base >=4.7 && <5
     , bytestring
     , free
     , gd
     , hsexif
-    , hspec
     , http-types
     , imps
-    , scotty
     , text
+    , wai
+    , warp
   default-language: Haskell2010
 
 test-suite imps-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Interpreters.TestInterpreter
       MockImageLibrary
       Tests.Helpers.CalculateNewSize
+      Tests.Interpreters.ImpLang
       Tests.MockImageLibrary
       Tests.Resize
       Paths_imps
@@ -100,6 +103,7 @@ test-suite imps-test
     , hspec
     , http-types
     , imps
-    , scotty
     , text
+    , wai
+    , warp
   default-language: Haskell2010

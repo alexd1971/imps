@@ -1,22 +1,21 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module DSL
-  ( Image,
-    Size,
-    Quality,
-    Orientation (..),
-    ImpScript,
-    decodeJpeg,
-    encodeJpeg,
-    decodePng,
-    encodePng,
-    rotateToNormal,
-    resize,
-    Interpreter (..),
-    interpret,
-  )
-where
+module DSL.ImpLang
+  ( Image
+  , Size
+  , Quality
+  , Orientation(..)
+  , ImpScript
+  , decodeJpeg
+  , encodeJpeg
+  , decodePng
+  , encodePng
+  , rotateToNormal
+  , resize
+  , Interpreter(..)
+  , interpret
+  ) where
 
 import Control.Monad.Free
 import Data.ByteString.Lazy
@@ -27,7 +26,12 @@ type Size = Int
 
 type Quality = Int
 
-data Orientation = Normal | CW90 | UpSideDown | CCW90 deriving (Eq, Show, Read, Enum, Bounded)
+data Orientation
+  = Normal
+  | CW90
+  | UpSideDown
+  | CCW90
+  deriving (Eq, Show, Read, Enum, Bounded)
 
 data ImpLang next
   = DecodeJpeg ByteString ((Image, Orientation) -> next)
@@ -58,7 +62,9 @@ rotateToNormal orientation img = liftF $ RotateToNormal orientation img id
 resize :: Size -> Image -> ImpScript Image
 resize size img = liftF $ ResizeImage size img id
 
-class Monad m => Interpreter m where
+class Monad m =>
+      Interpreter m
+  where
   onDecodeJpeg :: ByteString -> m (Image, Orientation)
   onDecodePng :: ByteString -> m Image
   onEncodeJpeg :: Quality -> Image -> m ByteString
@@ -66,7 +72,10 @@ class Monad m => Interpreter m where
   onRotateToNormal :: Orientation -> Image -> m Image
   onResizeImage :: Size -> Image -> m Image
 
-interpret :: Monad m => Interpreter m => ImpScript a -> m a
+interpret ::
+     Monad m
+  => Interpreter m =>
+       ImpScript a -> m a
 interpret (Pure a) = return a
 interpret (Free (DecodeJpeg bs next)) = do
   img <- onDecodeJpeg bs

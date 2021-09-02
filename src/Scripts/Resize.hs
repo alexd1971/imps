@@ -1,15 +1,15 @@
-module Resize where
+module Scripts.Resize where
 
-import DSL
-  ( ImpScript,
-    Quality,
-    Size,
-    decodeJpeg,
-    decodePng,
-    encodeJpeg,
-    encodePng,
-    resize,
-    rotateToNormal,
+import DSL.ImpLang
+  ( ImpScript
+  , Quality
+  , Size
+  , decodeJpeg
+  , decodePng
+  , encodeJpeg
+  , encodePng
+  , resize
+  , rotateToNormal
   )
 import Data.ByteString.Lazy (ByteString)
 
