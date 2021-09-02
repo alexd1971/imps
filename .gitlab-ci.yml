@@ -1,5 +1,6 @@
 variables:
-  LATEST = "1.0"
+  LATEST: "1.0"
+
 stages:
   - build
 
