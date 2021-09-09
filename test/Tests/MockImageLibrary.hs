@@ -5,12 +5,11 @@ module Tests.MockImageLibrary
   , testMockImageLibrary
   ) where
 
-import DSL.ImpLang (Orientation(CCW90, CW90, Normal, UpSideDown))
+import DSL.ImpLang (Orientation(CCW90, CW90, Normal, UpSideDown), Size)
 import MockImageLibrary
   ( Direction(..)
-  , Height
   , MockImage(height, orientation, width)
-  , Width
+  , crop
   , decode
   , encode
   , resize
@@ -56,27 +55,37 @@ testRotate = do
   prop "rotation swaps width and height" widthAndHeightSwaps
   prop "rotation changes orientation correctly" correctOrientation
 
-resizeProp' :: Width -> Height -> MockImage -> Bool
-resizeProp' w h image =
-  let image' = resize w h image
+type Method = Size -> MockImage -> MockImage
+
+resizeProp' :: Method -> Size -> MockImage -> Bool
+resizeProp' method s@(w, h) image =
+  let image' = method s image
    in width image' == w && height image' == h
 
-resizeParams :: Gen (Int, Int, MockImage)
+resizeParams :: Gen (Size, MockImage)
 resizeParams = do
   w <- choose (100, 5000)
   h <- choose (100, 5000)
   image <- arbitrary
-  return (w, h, image)
+  return ((w, h), image)
 
 resizeProp :: Property
-resizeProp = forAll resizeParams (\(w, h, image) -> resizeProp' w h image)
+resizeProp = forAll resizeParams (uncurry $ resizeProp' resize)
+
+cropProp :: Property
+cropProp = forAll resizeParams (uncurry $ resizeProp' crop)
 
 testResize :: Spec
 testResize = do
   prop "resizing changes image size correctly" resizeProp
+
+testCrop :: Spec
+testCrop = do
+  prop "cropping changes image size correctly" cropProp
 
 testMockImageLibrary :: Spec
 testMockImageLibrary = do
   describe "testing encode and decode functions:" testEncodeDecode
   describe "testing rotate function:" testRotate
   describe "testing resize function" testResize
+  describe "testing crop function" testCrop

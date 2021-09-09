@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8367aeeeaa96911e9d0290350c69f143e3735d5fef12cdccfbf3268282ca9353
+-- hash: 278b628a1e85995c420e7a47e43e8c73850b299165b15ff016e3b048a9c4d4ae
 
 name:           imps
 version:        0.1.0.0
@@ -30,13 +30,12 @@ library
       DSL.ControlProgram
       DSL.ImpLang
       DSL.IOLang
-      Helpers
+      Helpers.ResizeRules
       Interpreters.ControlProgram
       Interpreters.ImpLang.GD
-      Interpreters.ImpLang.JuicyPixels
       Interpreters.IOLang.Http
       Scripts.Program
-      Scripts.ReadInput
+      Scripts.ReadData
       Scripts.Resize
   other-modules:
       Paths_imps
@@ -51,6 +50,7 @@ library
     , gd
     , hsexif
     , http-types
+    , mtl
     , text
     , wai
     , warp
@@ -73,6 +73,7 @@ executable imps
     , hsexif
     , http-types
     , imps
+    , mtl
     , text
     , wai
     , warp
@@ -83,7 +84,7 @@ test-suite imps-test
   main-is: Spec.hs
   other-modules:
       MockImageLibrary
-      Tests.Helpers.CalculateNewSize
+      Tests.Helpers.ResizeRules
       Tests.Interpreters.ImpLang
       Tests.MockImageLibrary
       Tests.Resize
@@ -103,6 +104,7 @@ test-suite imps-test
     , hspec
     , http-types
     , imps
+    , mtl
     , text
     , wai
     , warp

@@ -7,15 +7,18 @@ import DSL.ImpLang
   , ImpScript
   , Interpreter(..)
   , Orientation(..)
+  , Quality(..)
   , Size
   , interpret
   )
-import Data.ByteString.Lazy (ByteString, fromStrict, toStrict)
-import qualified Graphics.GD as GD
+import Data.Maybe (fromMaybe)
+import qualified Graphics.GD.ByteString.Lazy as GD
   ( Image
+  , copyRegion
   , imageSize
   , loadJpegByteString
   , loadPngByteString
+  , newImage
   , resizeImage
   , rotateImage
   , saveJpegByteString
@@ -27,7 +30,7 @@ import qualified Graphics.HsExif as Exif
   , getOrientation
   , parseExif
   )
-import Helpers
+import Helpers.ResizeRules
 
 type instance Image = GD.Image
 
@@ -44,19 +47,31 @@ instance Interpreter IO where
                     Just (Exif.Rotation Exif.MinusNinety) -> CCW90
                     Just (Exif.Rotation Exif.HundredAndEighty) -> UpSideDown
                     _ -> Normal
-    image <- GD.loadJpegByteString . toStrict $ bs
+    image <- GD.loadJpegByteString bs
     return (image, orientation)
-  onDecodePng bs = GD.loadPngByteString (toStrict bs)
-  onEncodeJpeg quality image =
-    fromStrict <$> GD.saveJpegByteString quality image
-  onEncodePng image = fromStrict <$> GD.savePngByteString image
-  onRotateToNormal orientation image =
+  onDecodePng bs = GD.loadPngByteString bs
+  onEncodeJpeg quality image = do
+    case quality of
+      Default -> GD.saveJpegByteString (-1) image
+      Quality qlty -> GD.saveJpegByteString qlty image
+  onEncodePng image = GD.savePngByteString image
+  onRotateToNormal orientation image = do
     case orientation of
       CW90 -> GD.rotateImage 1 image
       CCW90 -> GD.rotateImage 3 image
       UpSideDown -> GD.rotateImage 2 image
       _ -> return image
-  onResizeImage size img = do
-    actualSize <- GD.imageSize img
-    let newSize = calculateNewSize actualSize size
-    uncurry GD.resizeImage newSize img
+  onResize size image = uncurry GD.resizeImage size image
+  onCrop (width, height) image = do
+    size@(w, h) <- GD.imageSize image
+    let size' = (min width w, min height h)
+    if size' == size
+      then return image
+      else do
+        image' <- GD.newImage size'
+        let point = ((w - fst size') `div` 2, (h - snd size') `div` 2)
+        GD.copyRegion point size' image (0, 0) image'
+        return image'
+  onGetImageSize = GD.imageSize
+  onContainSize w h s = pure $ containRule w h s
+  onCoverSize w h s = pure $ coverRule w h s

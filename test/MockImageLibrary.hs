@@ -1,8 +1,9 @@
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module MockImageLibrary where
 
-import DSL.ImpLang (Orientation(..))
+import DSL.ImpLang (Orientation(..), Quality(..), Size)
 import Data.ByteString.Char8 (ByteString, pack, unpack)
 import Test.QuickCheck (Arbitrary(..), choose, elements)
 
@@ -11,7 +12,7 @@ data MockImage =
     { width :: Int
     , height :: Int
     , orientation :: Orientation
-    , quality :: Int
+    , quality :: Quality
     }
   deriving (Eq, Read, Show)
 
@@ -48,12 +49,11 @@ rotate d image@(MockImage w h o _) =
               else pred o
         }
 
-type Width = Int
+resize :: Size -> MockImage -> MockImage
+resize (w, h) image = image {width = w, height = h}
 
-type Height = Int
-
-resize :: Width -> Height -> MockImage -> MockImage
-resize w h image = image {width = w, height = h}
+crop :: Size -> MockImage -> MockImage
+crop (w, h) image = image {width = w, height = h}
 
 instance Arbitrary Direction where
   arbitrary = elements [CW, CCW]
@@ -69,8 +69,12 @@ instance Arbitrary Orientation where
 
 instance Arbitrary MockImage where
   arbitrary = do
-    w <- choose (100, 5000)
-    h <- choose (100, 5000)
-    o <- arbitrary
-    q <- choose (0, 100)
-    return MockImage {width = w, height = h, orientation = o, quality = q}
+    width <- choose (100, 5000)
+    height <- choose (100, 5000)
+    orientation <- arbitrary
+    q <- choose (-1, 100)
+    let quality =
+          case q of
+            -1 -> Default
+            _ -> Quality q
+    return MockImage {..}
