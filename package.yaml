@@ -28,6 +28,7 @@ dependencies:
 - gd
 - hsexif
 - http-types
+- mtl
 - text
 - wai
 - warp
