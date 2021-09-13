@@ -1,10 +1,12 @@
 FROM haskell:8.10.4-buster as build
 
 # Install build dependencies
-RUN     apt-get update && apt-get -y install libgd-dev
+RUN     apt-get update && apt-get -y install wget libjpeg62-turbo-dev libpng-dev
 # Copying imps sources
 WORKDIR /tmp/build
 COPY    . ./
+# Building ImageMagick
+RUN sh install-ImageMagick.sh
 # Running tests
 RUN     stack test
 # Building imps

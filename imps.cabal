@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 278b628a1e85995c420e7a47e43e8c73850b299165b15ff016e3b048a9c4d4ae
+-- hash: ec440fb02f988706ad80dea1b939ffdba0a6d1e9318d23c50e9ece54826fa556
 
 name:           imps
 version:        0.1.0.0
@@ -32,7 +32,7 @@ library
       DSL.IOLang
       Helpers.ResizeRules
       Interpreters.ControlProgram
-      Interpreters.ImpLang.GD
+      Interpreters.ImpLang.ImageMagick
       Interpreters.IOLang.Http
       Scripts.Program
       Scripts.ReadData
@@ -42,15 +42,14 @@ library
   hs-source-dirs:
       src
   build-depends:
-      JuicyPixels
-    , JuicyPixels-extra
-    , base >=4.7 && <5
+      base >=4.7 && <5
     , bytestring
     , free
-    , gd
     , hsexif
     , http-types
+    , imagemagick
     , mtl
+    , resourcet
     , text
     , wai
     , warp
@@ -64,16 +63,15 @@ executable imps
       app
   ghc-options: -O2 -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
-    , JuicyPixels-extra
-    , base >=4.7 && <5
+      base >=4.7 && <5
     , bytestring
     , free
-    , gd
     , hsexif
     , http-types
+    , imagemagick
     , imps
     , mtl
+    , resourcet
     , text
     , wai
     , warp
@@ -93,18 +91,17 @@ test-suite imps-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
-    , JuicyPixels-extra
-    , QuickCheck
+      QuickCheck
     , base >=4.7 && <5
     , bytestring
     , free
-    , gd
     , hsexif
     , hspec
     , http-types
+    , imagemagick
     , imps
     , mtl
+    , resourcet
     , text
     , wai
     , warp

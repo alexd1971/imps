@@ -20,12 +20,11 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/githubuser/imps#readme>
 
 dependencies:
-- JuicyPixels
-- JuicyPixels-extra
 - base >= 4.7 && < 5
 - bytestring
 - free
-- gd
+- resourcet
+- imagemagick
 - hsexif
 - http-types
 - mtl
