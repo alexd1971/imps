@@ -1,6 +1,3 @@
-variables:
-  LATEST: "1.0"
-
 stages:
   - build
 
@@ -21,17 +18,6 @@ build_dev:
   only:
     - master
 
-build_latest:
-  extends: .build_job
-  script:
-    - docker build --no-cache -t $CI_REGISTRY_IMAGE:latest .
-    - docker push $CI_REGISTRY_IMAGE:latest
-  only:
-    variables:
-      - $CI_COMMIT_REF_NAME == $LATEST
-  except:
-    - tags
-
 build_tag:
   extends: .build_job
   script:
@@ -40,14 +26,11 @@ build_tag:
   only:
     - tags
 
-build_test:
+build_branch:
   extends: .build_job
   script:
-    - docker build --no-cache -t $CI_REGISTRY_IMAGE:test .
-    - docker push $CI_REGISTRY_IMAGE:test
+    - docker build --no-cache -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   except:
-    variables:
-      - $CI_COMMIT_REF_NAME == $LATEST
-    refs:
-      - master
-      - tags
+    - master
+    - tags
