@@ -1,6 +1,6 @@
 name:                imps
-version:             0.1.0.0
-github:              "githubuser/imps"
+version:             2.0.0.0
+github:              "alexd1971/imps"
 license:             BSD3
 author:              "Aleksey Danilevsky"
 maintainer:          "alexey.danilevsky@gmail.com"
