@@ -25,12 +25,6 @@ import Data.Maybe (fromMaybe, isNothing)
 import Data.Tuple (swap)
 import Network.HTTP.Types (status429)
 
-imageResize :: Size -> Orientation -> Image -> ImpScript Image
-imageResize size orientation image = do
-  if orientation == Normal || orientation == UpSideDown
-    then resize size image
-    else resize (swap size) image
-
 jpegResizeToContain ::
      Maybe Width
   -> Maybe Height
@@ -40,12 +34,12 @@ jpegResizeToContain ::
 jpegResizeToContain w h q bs = do
   (image, orientation) <- decodeJpeg bs
   imageSize <- getImageSize image
-  size <-
-    if orientation == Normal || orientation == UpSideDown
-      then containSize w h imageSize
-      else containSize w h (swap imageSize)
-  imageResize size orientation image >>= rotateToNormal orientation >>=
-    encodeJpeg q
+  let size =
+        if orientation == Normal || orientation == UpSideDown
+          then (w, h)
+          else (h, w)
+  size' <- uncurry containSize size imageSize
+  resize size' image >>= encodeJpeg q
 
 jpegResizeToCover ::
      Maybe Width
@@ -56,13 +50,12 @@ jpegResizeToCover ::
 jpegResizeToCover w h q bs = do
   (image, orientation) <- decodeJpeg bs
   imageSize <- getImageSize image
-  size <-
-    if orientation == Normal || orientation == UpSideDown
-      then coverSize w h imageSize
-      else coverSize w h (swap imageSize)
-  image' <- imageResize size orientation image >>= rotateToNormal orientation
-  imageSize' <- getImageSize image'
-  crop (cropSize w h imageSize') image' >>= encodeJpeg q
+  let size =
+        if orientation == Normal || orientation == UpSideDown
+          then (w, h)
+          else (h, w)
+  size' <- uncurry coverSize size imageSize
+  resize size' image >>= crop (uncurry cropSize size size') >>= encodeJpeg q
 
 pngResizeToContain ::
      Maybe Width -> Maybe Height -> ByteString -> ImpScript ByteString
@@ -78,9 +71,7 @@ pngResizeToCover w h bs = do
   image <- decodePng bs
   imageSize <- getImageSize image
   size <- coverSize w h imageSize
-  image' <- resize size image
-  imageSize' <- getImageSize image'
-  crop (cropSize w h imageSize') image' >>= encodePng
+  resize size image >>= crop (cropSize w h size) >>= encodePng
 
 cropSize :: Maybe Width -> Maybe Height -> Size -> Size
 cropSize w h (w', h') = (fromMaybe w' w, fromMaybe h' h)

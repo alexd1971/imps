@@ -26,6 +26,7 @@ module DSL.ImpLang
 
 import Control.Monad.Free
 import Data.ByteString.Lazy
+import Helpers.ResizeRules
 
 type family Image
 
@@ -106,7 +107,9 @@ class Monad m =>
   onEncodePng :: Image -> m ByteString
   onRotateToNormal :: Orientation -> Image -> m Image
   onContainSize :: Maybe Width -> Maybe Height -> Size -> m Size
+  onContainSize w h s = pure $ containRule w h s
   onCoverSize :: Maybe Width -> Maybe Height -> Size -> m Size
+  onCoverSize w h s = pure $ coverRule w h s
   onResize :: Size -> Image -> m Image
   onCrop :: Size -> Image -> m Image
   onGetImageSize :: Image -> m Size

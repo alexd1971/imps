@@ -3,18 +3,20 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Interpreters.IOLang.Http
-  (
+  ( run
   ) where
 
 import Control.Monad (join, when)
 import Control.Monad.Writer (MonadWriter(tell), Writer, execWriter)
 import DSL.IOLang
-  ( ImageType(..)
+  ( IOScript
+  , ImageType(..)
   , Input
   , InputData(..)
   , Interpreter(..)
   , Output
   , OutputResult
+  , interpret
   )
 import DSL.ImpLang (Height, Quality(..), ResizeRule(..), Width)
 import Data.ByteString.Char8 (unpack)
@@ -150,3 +152,6 @@ checkImageBS :: ByteString -> Writer Text ()
 checkImageBS bs
   | BL.null bs = tell "No image.\n"
   | otherwise = return ()
+
+run :: IOScript a -> IO a
+run = interpret

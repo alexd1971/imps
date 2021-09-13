@@ -8,16 +8,14 @@ import DSL.ControlProgram
   , Script(IOScriptDef, ImpScriptDef)
   , interpret
   )
-import qualified DSL.IOLang as IOLang (interpret)
-import qualified DSL.ImpLang as ImpLang (interpret)
-import Interpreters.IOLang.Http
-import Interpreters.ImpLang.GD
+import qualified Interpreters.IOLang.Http as IOLang (run)
+import qualified Interpreters.ImpLang.ImageMagick as ImpLang (run)
 
-interpretScript (IOScriptDef src) = IOLang.interpret src
-interpretScript (ImpScriptDef src) = ImpLang.interpret src
+runScript (IOScriptDef src) = IOLang.run src
+runScript (ImpScriptDef src) = ImpLang.run src
 
 instance Interpreter IO where
-  onEval = interpretScript
+  onEval = runScript
 
 run :: ControlProgram a -> IO a
 run = interpret

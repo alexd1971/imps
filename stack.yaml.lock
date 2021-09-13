@@ -11,6 +11,27 @@ packages:
       sha256: 0ce5093c9d5e41218e6fc01efe068213e6b297f27e1abbafc9918f82b660b864
   original:
     hackage: hsexif-0.6.1.8
+- completed:
+    hackage: imagemagick-0.0.4.2@sha256:3bbd2a38b54f5c945b74514c87989c96044bb1f9aa15568a4c47905cffbc7d24,17437
+    pantry-tree:
+      size: 7021
+      sha256: 64abef36481a375a146af039fede02e2c54819ef44f88c930ca0ca36e53be892
+  original:
+    hackage: imagemagick-0.0.4.2
+- completed:
+    hackage: resourcet-1.1.11@sha256:6c16ce2485e4368048ee618f36bd8606aff8212100333d834b205b14cb4c6023,1981
+    pantry-tree:
+      size: 647
+      sha256: a20624ee1b2369b258059674aa9dac02e0e3b5a076fe08aa1417dd4788247498
+  original:
+    hackage: resourcet-1.1.11
+- completed:
+    hackage: unliftio-core-0.1.2.0@sha256:b0a7652ffce2284a6cebe05c99eb60573a8fb6631163f34b0b30a80b4a78cb23,1081
+    pantry-tree:
+      size: 328
+      sha256: 9d970bf5f98e68e8fc129b04d6c9d8eb1e641c7556ffd0f0a168a259335b6fd7
+  original:
+    hackage: unliftio-core-0.1.2.0
 snapshots:
 - completed:
     size: 585817
