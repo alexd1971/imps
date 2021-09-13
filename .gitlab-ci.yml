@@ -30,7 +30,7 @@ build_branch:
   extends: .build_job
   script:
     - docker build --no-cache -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
-    - docker push $CI_REGISTRY_IMAGE:test
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   except:
     - master
     - tags
